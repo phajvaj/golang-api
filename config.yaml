@@ -1,0 +1,14 @@
+app:
+  env:  "development"
+  host: "0.0.0.0:8080"
+  debug: true
+  serctkey: "034ijdweu92834209udjf83292349"
+dbms:
+  host: "127.0.0.1"
+  port: 3306
+  dbname: "db_doctor_note"
+  username: "doisoft"
+  password: "260931"
+log:
+  level: "debug"
+  format: "json"
