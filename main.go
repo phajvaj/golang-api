@@ -1,14 +1,18 @@
 package main
 
 import (
+	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"nan_api_main/controller"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -38,9 +42,9 @@ func main() {
 	//router.POST("/login", controller.LoginUser)
 	//router.GET("/name/:msg", getName)
 
-	/*srv := &http.Server{
+	srv := &http.Server{
 		Addr:              viper.GetString("app.host"),
-		Handler:           router,
+		Handler:           controller.SetRoutes().Path(),
 		TLSConfig:         &tls.Config{},
 		ReadTimeout:       0,
 		ReadHeaderTimeout: 0,
@@ -51,14 +55,14 @@ func main() {
 		ConnState: func(net.Conn, http.ConnState) {
 		},
 		ErrorLog: &log.Logger{},
-	}*/
+	}
 
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	//srv.ListenAndServe()
-	//controller.NewRoutes().Run(viper.GetString("app.host"))
+	//controller.SetRoutes().Run(viper.GetString("app.host"))
 	go func() {
-		if err := controller.SetRoutes().Run(viper.GetString("app.host")); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
@@ -75,11 +79,11 @@ func main() {
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
-	/*ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown:", err)
-	}*/
+	}
 
 	log.Println("Server exiting")
 }

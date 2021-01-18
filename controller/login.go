@@ -15,15 +15,15 @@ func (r routes) addLogin(rg *gin.RouterGroup) {
 	rt.POST("/", LoginUser)
 }
 func LoginUser(c *gin.Context) {
-	var u model.LoginUser
+	var u model.UsersLoginJson
 	if err := c.ShouldBindJSON(&u); err != nil {
-		c.JSON(http.StatusOK, gin.H{"ok": false, "error": "Invalid json provided"})
+		c.JSON(http.StatusBadRequest, gin.H{"ok": false, "error": "Invalid json provided"})
 		return
 	}
 	db, err := config.SetConnection()
 
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"ok": false, "error": "not connect dnms"})
+		c.JSON(http.StatusOK, gin.H{"ok": false, "error": "not connect dbms"})
 		return
 	}
 	userModel := model.UsersModel{

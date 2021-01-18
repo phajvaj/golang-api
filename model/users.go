@@ -8,9 +8,9 @@ import (
 	"github.com/bdwilliams/go-jsonify/jsonify"
 )
 
-type UserJson struct {
-	Username string `json: "username"`
-	Password string `json: "password"`
+type UsersLoginJson struct {
+	Username string `json: "username" binding:"required"`
+	Password string `json: "password" binding:"required"`
 }
 
 type UsersModel struct {

@@ -24,6 +24,9 @@ func SetRoutes() routes {
 	r := routes{
 		router: gin.Default(),
 	}
+	r.router.MaxMultipartMemory = 8 << 20 // 8 MiB
+	r.router.Static("/web", "./public")
+	r.router.StaticFile("/favicon.ico", "./images/favicon.ico")
 
 	v1 := r.router.Group("/v1")
 
@@ -31,6 +34,10 @@ func SetRoutes() routes {
 	r.addLogin(v1)
 
 	return r
+}
+
+func (r routes) Path() *gin.Engine {
+	return r.router
 }
 
 func (r routes) Run(addr ...string) error {
