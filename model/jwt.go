@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -29,9 +30,9 @@ func CreateToken(Id int, Username, Fullname, UserType string) (string, error) {
 	return token, nil
 }
 
-func TokenAuthMiddleware() gin.HandlerFunc {
+func TokenAuthMiddleware(uType *string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := TokenValid(c.Request)
+		err := TokenValid(c.Request, uType)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "error": err.Error()})
 			c.Abort()
@@ -41,14 +42,28 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func TokenValid(r *http.Request) error {
+func TokenValid(r *http.Request, uType *string) error {
 	token, err := VerifyToken(r)
 	if err != nil {
 		return err
 	}
-	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+	//fmt.Println(*uType)
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		//fmt.Println(claims["userType"], claims["username"])
+		if uType != nil && *uType != claims["userType"] {
+			err := errors.New("Auth middleware is not validate!")
+			return err
+		}
+	} else {
+		err := errors.New("Token is not validate!")
 		return err
 	}
+
+	/*if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		return err
+	}*/
+
 	return nil
 }
 

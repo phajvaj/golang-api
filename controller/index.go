@@ -2,9 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"log"
 	"nan_api_main/model"
 	"net/http"
-	"path/filepath"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,10 +14,12 @@ func (r routes) addIndex(rg *gin.RouterGroup) {
 	rt := rg.Group("/index")
 
 	rt.GET("/", GetIndex)
-	rt.POST("/", model.TokenAuthMiddleware(), AddData)
-	rt.POST("/upload", SetUpload)
+	var AdminType = "ADMIN"
+	var DoctorType = "DOCTOR"
+	rt.POST("/", model.TokenAuthMiddleware(&AdminType), AddData)
+	rt.POST("/upload", model.TokenAuthMiddleware(nil), SetUpload)
 	rt.PUT("/:userId", EditData)
-	rt.GET("/pdf/:id", GetPdf)
+	rt.GET("/pdf/:id", model.TokenAuthMiddleware(&DoctorType), GetPdf)
 }
 
 func GetIndex(c *gin.Context) {
@@ -40,6 +43,7 @@ func EditData(c *gin.Context) {
 func SetUpload(c *gin.Context) {
 	name := c.PostForm("name")
 	email := c.PostForm("email")
+	uid := c.PostForm("id")
 
 	// Source
 	file, err := c.FormFile("file")
@@ -48,8 +52,17 @@ func SetUpload(c *gin.Context) {
 		return
 	}
 
-	filename := filepath.Base(file.Filename)
-	if err := c.SaveUploadedFile(file, "./public/pdf/"+filename); err != nil {
+	_path := "./public/pdf/"
+	if _, err := os.Stat(_path); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		err = os.Mkdir(_path, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	//filename := filepath.Base(file.Filename)
+	if err := c.SaveUploadedFile(file, _path+uid+".pdf"); err != nil {
 		c.JSON(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 		return
 	}

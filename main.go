@@ -33,15 +33,6 @@ func main() {
 		panic(fmt.Errorf("fatal error config file: %s \n", err))
 	}
 
-	//router config
-	//router := gin.Default()
-	//router := controller.router
-	//router.GET("/", controller.GetIndex)
-	//router.POST("/", model.TokenAuthMiddleware(), controller.AddData)
-	//router.PUT("/:userId", controller.EditData)
-	//router.POST("/login", controller.LoginUser)
-	//router.GET("/name/:msg", getName)
-
 	srv := &http.Server{
 		Addr:              viper.GetString("app.host"),
 		Handler:           controller.SetRoutes().Path(),
