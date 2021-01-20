@@ -8,7 +8,12 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
+
+func pdfPath() string {
+	return "./" + viper.GetString("app.public") + "/pdf/"
+}
 
 func (r routes) addIndex(rg *gin.RouterGroup) {
 	rt := rg.Group("/index")
@@ -20,6 +25,8 @@ func (r routes) addIndex(rg *gin.RouterGroup) {
 	rt.POST("/upload", model.TokenAuthMiddleware(nil), SetUpload)
 	rt.PUT("/:userId", EditData)
 	rt.GET("/pdf/:id", model.TokenAuthMiddleware(&DoctorType), GetPdf)
+	rt.GET("/pdfno/:id", GetPdf)
+	rt.GET("/png", GetPng)
 }
 
 func GetIndex(c *gin.Context) {
@@ -51,8 +58,7 @@ func SetUpload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
 		return
 	}
-
-	_path := "./public/pdf/"
+	_path := pdfPath()
 	if _, err := os.Stat(_path); os.IsNotExist(err) {
 		// path/to/whatever does not exist
 		err = os.Mkdir(_path, 0755)
@@ -72,5 +78,32 @@ func SetUpload(c *gin.Context) {
 
 func GetPdf(c *gin.Context) {
 	id := c.Param("id")
-	c.JSON(http.StatusOK, gin.H{"PDF": id + ".pdf"})
+	_path := pdfPath()
+	afile := _path + id + ".pdf"
+	fmt.Println(afile)
+	if _, err := os.Stat(afile); os.IsNotExist(err) {
+		c.JSON(http.StatusNoContent, gin.H{"error": err})
+		return
+	}
+	c.File(afile)
+	//c.JSON(http.StatusOK, gin.H{"PDF": afile})
+}
+
+func GetPng(c *gin.Context) {
+	response, err := http.Get("https://raw.githubusercontent.com/gin-gonic/logo/master/color.png")
+	if err != nil || response.StatusCode != http.StatusOK {
+		c.Status(http.StatusServiceUnavailable)
+		return
+	}
+
+	reader := response.Body
+	defer reader.Close()
+	contentLength := response.ContentLength
+	contentType := response.Header.Get("Content-Type")
+
+	extraHeaders := map[string]string{
+		"Content-Disposition": `attachment; filename="gopher.png"`,
+	}
+
+	c.DataFromReader(http.StatusOK, contentLength, contentType, reader, extraHeaders)
 }

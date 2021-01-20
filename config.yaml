@@ -3,6 +3,7 @@ app:
   host: "0.0.0.0:8080"
   debug: true
   serctkey: "034ijdweu92834209udjf83292349"
+  public: "public"
 dbms:
   host: "127.0.0.1"
   port: 3306

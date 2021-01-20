@@ -33,6 +33,15 @@ func main() {
 		panic(fmt.Errorf("fatal error config file: %s \n", err))
 	}
 
+	_path := "./" + viper.GetString("app.public")
+	if _, err := os.Stat(_path); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		err = os.Mkdir(_path, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	srv := &http.Server{
 		Addr:              viper.GetString("app.host"),
 		Handler:           controller.SetRoutes().Path(),
