@@ -16,7 +16,7 @@ func SetConnection() (db *sql.DB, err error) {
 	dbUser := viper.GetString("dbms.username")
 	dbPass := viper.GetString("dbms.password")
 
-	db, err = sql.Open(dbDriver, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName))
+	db, err = sql.Open(dbDriver, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4,utf8", dbUser, dbPass, dbHost, dbPort, dbName))
 	//defer db.Close()
 	if err != nil {
 		fmt.Println("connect fail")
